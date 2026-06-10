@@ -1,24 +1,99 @@
-# Fraud Detection Dataset Design
+# Fraud Detection & Compliance Reporting Dataset Design
 
-## Customers
+## Project Overview
+
+This project simulates a banking environment for an AI-powered fraud detection and compliance reporting system.
+
+The generated dataset will be used for:
+
+* Fraud Detection
+* AML (Anti-Money Laundering) Analysis
+* Compliance Reporting
+* Natural Language to SQL using LLaMA 3
+* Risk Investigation
+* SAR (Suspicious Activity Report) Generation
+
+Target:
+
+* Around 500,000 transactions
+* Embedded fraud patterns
+* Deterministic data generation using random seeds
+
+---
+
+# Database Relationship Diagram
+
+```
+Customers
+    |
+    +------ Accounts
+    |            |
+    |            +------ Transactions
+    |            |
+    |            +------ Beneficiaries
+    |            |
+    |            +------ AML Alerts
+    |            |
+    |            +------ CTR Log
+    |
+    +------ Device Logins
+    |
+    +------ KYC Records
+
+Branches
+
+FATF High Risk Countries
+        |
+        +------ Transactions
+        +------ Beneficiaries
+```
+
+---
+
+# Table Design
+
+## 1. Customers
+
+Purpose:
+Store customer master information.
 
 Rows: 50,000
+
+Primary Key:
+
+* customer_id
 
 Columns:
 
 * customer_id
 * full_name
+* gender
+* date_of_birth
 * phone
 * email
 * address
+* occupation
+* annual_income
 * risk_rating
 * created_at
 
 ---
 
-## Accounts
+## 2. Accounts
+
+Purpose:
+Store bank accounts belonging to customers.
 
 Rows: 100,000
+
+Primary Key:
+
+* account_id
+
+Foreign Keys:
+
+* customer_id → Customers
+* branch_id → Branches
 
 Columns:
 
@@ -32,9 +107,21 @@ Columns:
 
 ---
 
-## Transactions
+## 3. Transactions
+
+Purpose:
+Store all financial transactions.
 
 Rows: 500,000
+
+Primary Key:
+
+* transaction_id
+
+Foreign Keys:
+
+* account_id → Accounts
+* beneficiary_id → Beneficiaries
 
 Columns:
 
@@ -49,9 +136,20 @@ Columns:
 
 ---
 
-## Beneficiaries
+## 4. Beneficiaries
+
+Purpose:
+Store beneficiary account details.
 
 Rows: 150,000
+
+Primary Key:
+
+* beneficiary_id
+
+Foreign Key:
+
+* account_id → Accounts
 
 Columns:
 
@@ -63,9 +161,20 @@ Columns:
 
 ---
 
-## Device Logins
+## 5. Device Logins
+
+Purpose:
+Track customer login activities.
 
 Rows: 300,000
+
+Primary Key:
+
+* login_id
+
+Foreign Key:
+
+* customer_id → Customers
 
 Columns:
 
@@ -78,9 +187,20 @@ Columns:
 
 ---
 
-## KYC Records
+## 6. KYC Records
+
+Purpose:
+Store customer verification details.
 
 Rows: 50,000
+
+Primary Key:
+
+* kyc_id
+
+Foreign Key:
+
+* customer_id → Customers
 
 Columns:
 
@@ -92,9 +212,20 @@ Columns:
 
 ---
 
-## AML Alerts
+## 7. AML Alerts
+
+Purpose:
+Store suspicious activity alerts.
 
 Rows: 10,000
+
+Primary Key:
+
+* alert_id
+
+Foreign Key:
+
+* transaction_id → Transactions
 
 Columns:
 
@@ -106,9 +237,20 @@ Columns:
 
 ---
 
-## CTR Log
+## 8. CTR Log
+
+Purpose:
+Store Currency Transaction Reports.
 
 Rows: 5,000
+
+Primary Key:
+
+* ctr_id
+
+Foreign Key:
+
+* transaction_id → Transactions
 
 Columns:
 
@@ -119,9 +261,16 @@ Columns:
 
 ---
 
-## Branches
+## 9. Branches
+
+Purpose:
+Store bank branch information.
 
 Rows: 100
+
+Primary Key:
+
+* branch_id
 
 Columns:
 
@@ -133,16 +282,22 @@ Columns:
 
 ---
 
-## FATF High Risk Countries
+## 10. FATF High Risk Countries
+
+Purpose:
+Store high-risk countries for AML monitoring.
 
 Rows: 20
+
+Primary Key:
+
+* country_code
 
 Columns:
 
 * country_code
 * country_name
 * risk_level
-
 
 ---
 
@@ -182,46 +337,105 @@ Columns:
 
 ## Transaction Amount Range
 
-Minimum Amount: ₹100
+Minimum Amount:
+₹100
 
-Maximum Amount: ₹10,00,000
-
----
-
-## Planned Fraud Patterns
-
-1. Structuring
-
-   * 5 transactions below ₹2,00,000 within 72 hours
-
-2. Dormant Account Reactivation
-
-   * No activity for 6 months followed by a large transfer
-
-3. Night Transactions
-
-   * Between 11 PM and 4 AM
-
-4. High-Risk FATF Country Transactions
-
-5. Rapid Beneficiary Addition
-
-6. Multiple Device Logins
-
-7. Large Round Amount Transfers
-
-8. Repeated Failed Transactions
+Maximum Amount:
+₹10,00,000
 
 ---
 
-## Data Generation Order
+# Planned Fraud Patterns
+
+## Pattern 1
+
+Structuring
+
+* Five transactions below ₹2,00,000 within 72 hours
+
+## Pattern 2
+
+Dormant Account Reactivation
+
+* No activity for six months followed by a large transfer
+
+## Pattern 3
+
+Night Transactions
+
+* Between 11 PM and 4 AM
+
+## Pattern 4
+
+High-Risk FATF Country Transactions
+
+## Pattern 5
+
+Rapid Beneficiary Addition
+
+## Pattern 6
+
+Multiple Device Logins
+
+## Pattern 7
+
+Large Round Amount Transfers
+
+## Pattern 8
+
+Repeated Failed Transactions
+
+---
+
+# Data Generation Order
 
 1. Branches
-2. Customers
-3. KYC Records
-4. Accounts
-5. Beneficiaries
-6. Transactions
-7. Device Logins
-8. AML Alerts
-9. CTR Log
+2. FATF High Risk Countries
+3. Customers
+4. KYC Records
+5. Accounts
+6. Beneficiaries
+7. Transactions
+8. Device Logins
+9. AML Alerts
+10. CTR Log
+
+---
+
+# Development Workflow
+
+Data Generation
+|
+V
+CSV Files
+|
+V
+PostgreSQL Database
+|
+V
+LLaMA 3 NL to SQL
+|
+V
+Fraud Investigation UI
+|
+V
+SAR Evidence Generation
+
+---
+
+# Week 1 Deliverables
+
+* schema.sql
+* generate_data.py
+* question_bank.md
+* LLaMA 3 API connectivity
+
+---
+
+# Notes
+
+* Data generation must be deterministic.
+* Random seeds should be fixed.
+* Fraud patterns must be embedded intentionally.
+* Generated data should support natural language fraud investigation queries.
+* All generated data should be compatible with PostgreSQL schema.
