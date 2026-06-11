@@ -11,6 +11,29 @@ from fraud_patterns.p2_large_late_night import (
 from fraud_patterns.p3_account_takeover import (
     inject_account_takeover
 )
+
+from fraud_patterns.p4_round_tripping import (
+    inject_round_tripping
+)
+
+from fraud_patterns.p5_cross_border_burst import (
+    inject_cross_border_burst
+)
+
+from fraud_patterns.p6_dormant_reactivation import (
+    inject_dormant_reactivation
+)
+
+from fraud_patterns.p7_ctr_threshold_splitting import (
+    inject_ctr_threshold_splitting
+)
+
+from fraud_patterns.p8_pep_activity import (
+    inject_pep_activity
+)
+
+
+
 # ============================================================
 # Load Data
 # ============================================================
@@ -82,7 +105,7 @@ def main():
         transactions_df,
         accounts_df,
         beneficiaries_df,
-        fatf_df
+        fatf_countries
     ) = load_data()
 
     # Pattern 1
@@ -93,14 +116,41 @@ def main():
     )
 
     transactions_df = inject_large_late_night(
-    transactions_df,
-    accounts_df
+        transactions_df,
+        accounts_df
     )
 
     transactions_df = inject_account_takeover(
-    transactions_df,
-    accounts_df
+        transactions_df,
+        accounts_df
     )
+
+    transactions_df = inject_round_tripping(
+        transactions_df,
+        accounts_df
+    )
+
+    transactions_df = inject_cross_border_burst(
+        transactions_df,
+        accounts_df,
+        fatf_countries
+    )
+
+    transactions_df = inject_dormant_reactivation(
+        transactions_df,
+        accounts_df
+    )
+
+    transactions_df = inject_ctr_threshold_splitting(
+        transactions_df,
+        accounts_df
+    )
+
+    transactions_df = inject_pep_activity(
+        transactions_df,
+        accounts_df
+    )
+
 
     # Future Patterns
 
