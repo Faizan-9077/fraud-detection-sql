@@ -1,0 +1,24 @@
+# Virtual Environment
+
+venv/
+
+# Python Cache
+
+**pycache**/
+*.pyc
+
+# Environment Variables
+
+.env
+
+# VS Code
+
+.vscode/
+
+# OS Files
+
+.DS_Store
+Thumbs.db
+
+# Sample data
+generated_data/
