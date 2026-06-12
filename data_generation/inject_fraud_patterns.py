@@ -152,15 +152,6 @@ def main():
     )
 
 
-    # Future Patterns
-
-    # transactions_df = inject_large_late_night(
-    #     transactions_df
-    # )
-
-    # transactions_df = inject_account_takeover(
-    #     transactions_df
-    # )
 
     save_data(transactions_df)
 

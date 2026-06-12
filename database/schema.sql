@@ -47,14 +47,14 @@ CREATE TABLE accounts (
 );
 
 CREATE TABLE kyc_records (
-    kyc_id BIGINT PRIMARY KEY,
+    kyc_id VARCHAR PRIMARY KEY,
     customer_id VARCHAR(20) NULL,
     status VARCHAR(50) NOT NULL,
     review_date DATE NOT NULL
 );
 
 CREATE TABLE beneficiaries (
-    beneficiary_id BIGINT PRIMARY KEY,
+    beneficiary_id VARCHAR PRIMARY KEY,
     account_id VARCHAR(20) NULL,
     beneficiary_name VARCHAR(255) NOT NULL,
     beneficiary_account_number VARCHAR(50) NOT NULL,
@@ -74,7 +74,7 @@ CREATE TABLE device_logins (
 CREATE TABLE transactions (
     txn_id VARCHAR(50) PRIMARY KEY,
     account_id VARCHAR(20) NOT NULL,
-    beneficiary_id BIGINT,
+    beneficiary_id VARCHAR(20),
     txn_type VARCHAR(50) NOT NULL,
     amount NUMERIC(18, 2) NOT NULL,
     balance_after_txn NUMERIC(18, 2) NOT NULL,
@@ -82,7 +82,8 @@ CREATE TABLE transactions (
     channel VARCHAR(50) NOT NULL,
     country_id INT,
     device_id VARCHAR(255),
-    status VARCHAR(20) NOT NULL
+    status VARCHAR(20) NOT NULL,
+    fraud_pattern VARCHAR(50) NOT NULL
 );
 
 CREATE TABLE aml_alerts (
