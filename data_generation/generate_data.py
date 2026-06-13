@@ -42,9 +42,15 @@ def main():
 
         "data_generation/generate_fatf_high_risk_countries.py",
 
+        "data_generation/generate_device_logins.py",
+
         "data_generation/generate_transactions.py",
 
-        "data_generation/inject_fraud_patterns.py"
+        "data_generation/inject_fraud_patterns.py",
+
+        "data_generation/generate_aml_alerts.py",
+
+        "data_generation/generate_ctr_log.py"
 
     ]
 

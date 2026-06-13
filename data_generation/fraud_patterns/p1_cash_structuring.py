@@ -22,10 +22,16 @@ def get_cash_structuring_accounts(accounts_df):
 
 def generate_cash_structuring_transactions(
     account_id,
-    start_txn_id
+    start_txn_id,
+    accounts_df
 ):
 
     fraud_transactions = []
+
+    current_balance = accounts_df.loc[
+        accounts_df["account_id"] == account_id,
+        "balance"
+    ].iloc[0]
 
     num_txns = random.randint(MIN_STRUCTURING_TXNS, MAX_STRUCTURING_TXNS)
 
@@ -37,24 +43,60 @@ def generate_cash_structuring_transactions(
 
     for i in range(num_txns):
 
+        txn_amount = random.randint(
+            MIN_STRUCTURING_AMOUNT,
+            MAX_STRUCTURING_AMOUNT
+        )
+
+        balance_after_txn = (
+            current_balance + txn_amount
+        )
+
+        current_balance = balance_after_txn
+
         txn = {
-            "txn_id": f"TXN{start_txn_id + i:09d}",
-            "account_id": account_id,
-            "beneficiary_id": np.nan,
-            "txn_type": "CASH_DEPOSIT",
-            "amount": random.randint(
-                MIN_STRUCTURING_AMOUNT,
-                MAX_STRUCTURING_AMOUNT
+
+            "txn_id":
+            f"TXN{start_txn_id + i:09d}",
+
+            "account_id":
+            account_id,
+
+            "beneficiary_id":
+            np.nan,
+
+            "txn_type":
+            "CASH_DEPOSIT",
+
+            "amount":
+            txn_amount,
+
+            "balance_after_txn":
+            balance_after_txn,
+
+            "txn_time":
+            base_time + timedelta(
+                hours=random.randint(
+                    0,
+                    STRUCTURING_WINDOW_HOURS
+                )
             ),
-            "balance_after_txn": np.nan,
-            "txn_time": base_time + timedelta(
-                hours=random.randint(0, STRUCTURING_WINDOW_HOURS)
-            ),
-            "channel": "BRANCH",
-            "country_id": DEFAULT_COUNTRY_ID,
-            "device_id": np.nan,
-            "status": "SUCCESS",
-            "fraud_pattern": "CASH_STRUCTURING"
+
+            "channel":
+            "BRANCH",
+
+            "country_id":
+            DEFAULT_COUNTRY_ID,
+
+            "device_id":
+            np.nan,
+
+            "status":
+            "SUCCESS",
+
+            "fraud_pattern":
+            "CASH_STRUCTURING"
+
         }
 
         fraud_transactions.append(txn)
@@ -98,7 +140,8 @@ def inject_cash_structuring(
 
         rows = generate_cash_structuring_transactions(
             account_id,
-            next_txn_id
+            next_txn_id,
+            accounts_df
         )
 
         fraud_rows.extend(rows)

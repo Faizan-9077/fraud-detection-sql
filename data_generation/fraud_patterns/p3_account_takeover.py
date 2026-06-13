@@ -27,10 +27,16 @@ def get_account_takeover_accounts(
 
 def generate_account_takeover_transactions(
     account_id,
-    start_txn_id
+    start_txn_id,
+    accounts_df
 ):
 
     fraud_transactions = []
+
+    current_balance = accounts_df.loc[
+        accounts_df["account_id"] == account_id,
+        "balance"
+    ].iloc[0]
 
     num_txns = random.randint(
         MIN_ACCOUNT_TAKEOVER_TXNS,
@@ -55,6 +61,18 @@ def generate_account_takeover_transactions(
 
         )
 
+        txn_amount = random.randint(
+            MIN_ACCOUNT_TAKEOVER_AMOUNT,
+            MAX_ACCOUNT_TAKEOVER_AMOUNT
+        )
+
+        balance_after_txn = max(
+            current_balance - txn_amount,
+            0
+        )
+
+        current_balance = balance_after_txn
+
         txn = {
 
             "txn_id":
@@ -77,13 +95,10 @@ def generate_account_takeover_transactions(
             ),
 
             "amount":
-            random.randint(
-                MIN_ACCOUNT_TAKEOVER_AMOUNT,
-                MAX_ACCOUNT_TAKEOVER_AMOUNT
-            ),
+            txn_amount,
 
             "balance_after_txn":
-            np.nan,
+            balance_after_txn,
 
             "txn_time":
             txn_time,
@@ -154,7 +169,8 @@ def inject_account_takeover(
 
             account_id,
 
-            next_txn_id
+            next_txn_id,
+            accounts_df
 
         )
 
