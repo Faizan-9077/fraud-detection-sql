@@ -14,55 +14,55 @@ transactions_df = pd.read_csv(
 
 ALERT_MAPPING = {
 
-    "P1_CASH_STRUCTURING":
+    "CASH_STRUCTURING":
     (
         "Cash Structuring",
         "HIGH"
     ),
 
-    "P2_LARGE_LATE_NIGHT":
+    "LARGE_LATE_NIGHT":
     (
         "Large Late Night Activity",
         "MEDIUM"
     ),
 
-    "P3_ACCOUNT_TAKEOVER":
+    "ACCOUNT_TAKEOVER":
     (
         "Account Takeover",
         "CRITICAL"
     ),
 
-    "P4_ROUND_TRIPPING":
+    "ROUND_TRIPPING":
     (
         "Round Tripping",
         "HIGH"
     ),
 
-    "P5_CROSS_BORDER_BURST":
+    "CROSS_BORDER_BURST":
     (
         "Cross Border Burst",
         "CRITICAL"
     ),
 
-    "P6_DORMANT_REACTIVATION":
+    "DORMANT_REACTIVATION":
     (
         "Dormant Account Reactivation",
         "HIGH"
     ),
 
-    "P7_CTR_THRESHOLD_SPLITTING":
+    "CTR_THRESHOLD_SPLITTING":
     (
         "CTR Threshold Splitting",
         "HIGH"
     ),
 
-    "P8_PEP_ACTIVITY":
+    "PEP_ACTIVITY":
     (
         "PEP Suspicious Activity",
         "CRITICAL"
     )
-
 }
+
 
 # -----------------------------------
 # Generate AML Alerts

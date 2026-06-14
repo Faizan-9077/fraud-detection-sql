@@ -11,7 +11,8 @@ random.seed(RANDOM_SEED)
 
 def inject_pep_activity(
     transactions_df,
-    accounts_df
+    accounts_df,
+    beneficiaries_df
 ):
 
     transactions_df["txn_time"] = pd.to_datetime(
@@ -42,8 +43,22 @@ def inject_pep_activity(
 
     transaction_counter = last_id + 1
 
+    beneficiary_lookup = (
+        beneficiaries_df
+        .groupby("account_id")["beneficiary_id"]
+        .apply(list)
+        .to_dict()
+    )
+
+
     for account in selected_accounts:
 
+        current_balance = accounts_df.loc[
+            accounts_df["account_id"] == account,
+            "balance"
+        ].iloc[0]
+
+    
         start_time = random.choice(
             transactions_df["txn_time"].tolist()
         )
@@ -56,6 +71,27 @@ def inject_pep_activity(
         for i in range(
             number_of_transactions
         ):
+            
+            txn_amount = random.randint(
+                2000000,
+                5000000
+            )
+
+            balance_after_txn = max(
+                current_balance - txn_amount,
+                0
+            )
+
+            current_balance = balance_after_txn
+
+            available_beneficiaries = beneficiary_lookup.get(
+                account,
+                []
+            )
+
+            beneficiary_id = random.choice(
+                available_beneficiaries
+            )
 
             txn = {
 
@@ -66,7 +102,7 @@ def inject_pep_activity(
                 account,
 
                 "beneficiary_id":
-                f"BEN{random.randint(1,99999):08d}",
+                beneficiary_id,
 
                 "txn_type":
                 random.choice(
@@ -77,13 +113,10 @@ def inject_pep_activity(
                 ),
 
                 "amount":
-                random.randint(
-                    2000000,
-                    5000000
-                ),
+                txn_amount,
 
                 "balance_after_txn":
-                0.0,
+                balance_after_txn,
 
                 "txn_time":
                 start_time
@@ -106,7 +139,7 @@ def inject_pep_activity(
                 "SUCCESS",
 
                 "fraud_pattern":
-                "P8_PEP_ACTIVITY"
+                "PEP_ACTIVITY"
 
             }
 

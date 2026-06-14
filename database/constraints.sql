@@ -8,8 +8,15 @@ ALTER TABLE accounts
     ADD CONSTRAINT fk_accounts_customer FOREIGN KEY (customer_id) REFERENCES customers(customer_id),
     ADD CONSTRAINT fk_accounts_branch FOREIGN KEY (branch_id) REFERENCES branches(branch_id);
 
-ALTER TABLE kyc_records 
-    ADD CONSTRAINT fk_kyc_customer FOREIGN KEY (customer_id) REFERENCES customers(customer_id);
+ALTER TABLE kyc_records
+    ADD CONSTRAINT fk_kyc_customer
+    FOREIGN KEY (customer_id)
+    REFERENCES customers(customer_id);
+
+ALTER TABLE kyc_records
+    ADD CONSTRAINT uq_kyc_customer
+    UNIQUE (customer_id);
+
 
 ALTER TABLE beneficiaries 
     ADD CONSTRAINT fk_beneficiaries_account FOREIGN KEY (account_id) REFERENCES accounts(account_id),
@@ -36,17 +43,13 @@ ALTER TABLE ctr_log
 ALTER TABLE customers
     ADD CONSTRAINT chk_customer_no_space
         CHECK(customer_id !~ '\s'),
-    ADD CONSTRAINT chk_customer_only_alphabet
-        CHECK (
-            first_name ~ '^[A-Za-z ]+$' AND
-            last_name ~ '^[A-Za-z ]*$' AND
-            middle_name ~ '^[A-Za-z ]*$'
-        ),
+
     ADD CONSTRAINT chk_customer_only_number
         CHECK (
             phone_number ~ '^[0-9]{10}$' AND
             aadhar ~ '^[0-9]{12}$'
         ),
+
     ADD CONSTRAINT chk_pan_valid
         CHECK (
             pan_number ~ '^[A-Z]{5}[0-9]{4}[A-Z]$'
@@ -106,11 +109,10 @@ ALTER TABLE kyc_records
 
 ALTER TABLE beneficiaries
     ADD CONSTRAINT chk_beneficiaries_no_space
-        CHECK(account_id !~ '\s' AND
-        beneficiary_account_number !~ '\s'
-        ),
-    ADD CONSTRAINT chk_beneficiaries_only_alphabet
-        CHECK(beneficiary_name ~ '^[A-Za-z ]+$'
+        CHECK(
+            account_id !~ '\s'
+            AND
+            beneficiary_account_number !~ '\s'
         );
 
 ALTER TABLE device_logins

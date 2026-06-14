@@ -62,7 +62,11 @@ def create_beneficiary(account_id):
         "account_id": account_id,
         "beneficiary_name": fake.name(),
         "beneficiary_account_number": beneficiary_account_number,
-        "country_id": random.choice(country_ids),
+        "country_id": (
+            random.choice(country_ids)
+            if random.random() < 0.05
+            else None
+        ),
         "created_at": (
             today - timedelta(
                 days=random.randint(1, 730)
@@ -138,14 +142,21 @@ assert beneficiary_df[
     "account_id"
 ].notnull().all()
 
-assert beneficiary_df[
-    "country_id"
-].notnull().all()
+print(
+    beneficiary_df["country_id"]
+    .notnull()
+    .mean()
+)
 
 beneficiary_counts = (
     beneficiary_df
     .groupby("account_id")
     .size()
+)
+
+beneficiary_df["country_id"] = (
+    beneficiary_df["country_id"]
+    .astype("Int64")
 )
 
 assert (beneficiary_counts == 1).sum() == 19500

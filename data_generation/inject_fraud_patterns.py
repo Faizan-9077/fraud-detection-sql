@@ -75,6 +75,14 @@ def save_data(transactions_df):
         transactions_df["txn_time"]
     )
 
+    transactions_df["country_id"] = (
+        pd.to_numeric(
+            transactions_df["country_id"],
+            errors="coerce"
+        )
+        .astype("Int64")
+    )
+
     transactions_df = transactions_df.sort_values(
         by=["txn_time", "txn_id"]
     )
@@ -127,28 +135,34 @@ def main():
 
     transactions_df = inject_round_tripping(
         transactions_df,
-        accounts_df
+        accounts_df,
+        beneficiaries_df,
+        fatf_countries
     )
 
     transactions_df = inject_cross_border_burst(
         transactions_df,
         accounts_df,
+        beneficiaries_df,
         fatf_countries
     )
 
     transactions_df = inject_dormant_reactivation(
         transactions_df,
-        accounts_df
+        accounts_df,
+        beneficiaries_df
     )
 
     transactions_df = inject_ctr_threshold_splitting(
         transactions_df,
-        accounts_df
+        accounts_df,
+        beneficiaries_df
     )
 
     transactions_df = inject_pep_activity(
         transactions_df,
-        accounts_df
+        accounts_df,
+        beneficiaries_df
     )
 
 
