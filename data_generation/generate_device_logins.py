@@ -11,7 +11,7 @@ import pandas as pd
 random.seed(42)
 np.random.seed(42)
 
-MIN_LOGINS = 1
+MIN_LOGINS = 2
 MAX_LOGINS = 5
 
 # -----------------------------------
@@ -38,13 +38,9 @@ fatf_country_ids = fatf_df[
 # Helper Functions
 # -----------------------------------
 
-def generate_datetime():
+def generate_datetime(customer_created_at):
 
-    start = datetime(
-        2025,
-        1,
-        1
-    )
+    start = customer_created_at
 
     end = datetime(
         2026,
@@ -52,10 +48,13 @@ def generate_datetime():
         1
     )
 
+    if start >= end:
+        return end.strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+
     total_seconds = int(
-        (
-            end - start
-        ).total_seconds()
+        (end - start).total_seconds()
     )
 
     return (
@@ -85,28 +84,12 @@ def generate_country():
 
     x = random.random()
 
-    # Domestic Login
-
-    if x < 0.92:
-
+    if x < 0.98:
         return None
 
-    # Normal Foreign Login
-
-    elif x < 0.98:
-
-        return random.randint(
-            21,
-            100
-        )
-
-    # FATF High Risk Country
-
-    else:
-
-        return random.choice(
-            fatf_country_ids
-        )
+    return random.choice(
+        fatf_country_ids
+    )
 
 
 # -----------------------------------
@@ -117,58 +100,56 @@ device_logins = []
 
 login_counter = 1
 
-for customer_id in customer_ids:
+for _, customer_row in customers_df.iterrows():
+
+    customer_id = customer_row["customer_id"]
+
+    created_at = pd.to_datetime(
+        customer_row["created_at"]
+    )
 
     number_of_logins = random.randint(
         MIN_LOGINS,
         MAX_LOGINS
     )
 
-    primary_device = (
-        f"DEV{random.randint(1,50000):06d}"
+    number_of_devices = np.random.choice(
+        [1, 2, 3],
+        p=[0.65, 0.30, 0.05]
     )
 
-    secondary_device = (
+    devices = [
         f"DEV{random.randint(1,50000):06d}"
-    )
+        for _ in range(number_of_devices)
+    ]
 
-    for _ in range(
-        number_of_logins
-    ):
+    for _ in range(number_of_logins):
 
-        if random.random() < 0.85:
-
-            device_id = primary_device
-
-        else:
-
-            device_id = secondary_device
-
-        device_logins.append(
-
-            {
-
-                "login_id":
-                f"LOGIN{login_counter:09d}",
-
-                "customer_id":
-                customer_id,
-
-                "device_id":
-                device_id,
-
-                "ip_address":
-                generate_ip(),
-
-                "country_id":
-                generate_country(),
-
-                "login_time":
-                generate_datetime()
-
-            }
-
+        device_id = random.choice(
+            devices
         )
+
+        device_logins.append({
+
+            "login_id":
+            f"LOGIN{login_counter:09d}",
+
+            "customer_id":
+            customer_id,
+
+            "device_id":
+            device_id,
+
+            "ip_address":
+            generate_ip(),
+
+            "country_id":
+            generate_country(),
+
+            "login_time":
+            generate_datetime(created_at)
+
+        })
 
         login_counter += 1
 

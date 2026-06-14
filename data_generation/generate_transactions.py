@@ -8,7 +8,7 @@ import pandas as pd
 # Configuration
 # -----------------------------------
 
-TOTAL_TRANSACTIONS = 499000
+TOTAL_TRANSACTIONS = 500000
 
 random.seed(42)
 np.random.seed(42)
@@ -21,13 +21,47 @@ accounts_df = pd.read_csv(
     "generated_data/accounts.csv"
 )
 
+customers_df = pd.read_csv(
+    "generated_data/customers.csv"
+)
+
 beneficiaries_df = pd.read_csv(
     "generated_data/beneficiaries.csv"
+)
+
+
+device_logins_df = pd.read_csv(
+    "generated_data/device_logins.csv"
 )
 
 account_ids = accounts_df[
     "account_id"
 ].tolist()
+
+account_customer_map = (
+    accounts_df
+    .set_index("account_id")[
+        "customer_id"
+    ]
+    .to_dict()
+)
+
+customer_created_map = (
+    customers_df
+    .set_index("customer_id")[
+        "created_at"
+    ]
+    .to_dict()
+)
+
+customer_devices = (
+    device_logins_df
+    .groupby("customer_id")[
+        "device_id"
+    ]
+    .apply(list)
+    .to_dict()
+)
 
 # account -> beneficiaries
 
@@ -163,12 +197,12 @@ def generate_amount():
         )
 
 
-def generate_datetime():
+def generate_datetime(
+    customer_created_at
+):
 
-    start = datetime(
-        2025,
-        1,
-        1
+    start = pd.to_datetime(
+        customer_created_at
     )
 
     end = datetime(
@@ -177,7 +211,13 @@ def generate_datetime():
         1
     )
 
-    seconds = int(
+    if start >= end:
+
+        return end.strftime(
+            "%Y-%m-%d %H:%M:%S"
+        )
+
+    total_seconds = int(
         (
             end - start
         ).total_seconds()
@@ -188,13 +228,12 @@ def generate_datetime():
         timedelta(
             seconds=random.randint(
                 0,
-                seconds
+                total_seconds
             )
         )
     ).strftime(
         "%Y-%m-%d %H:%M:%S"
     )
-
 
 # -----------------------------------
 # Generate Transactions
@@ -225,6 +264,12 @@ for i in range(
 
     amount = generate_amount()
 
+    status = random.choices(
+        STATUS,
+        weights=STATUS_WEIGHTS,
+        k=1
+    )[0]
+
     current_balance = balance_map[
         account_id
     ]
@@ -240,25 +285,43 @@ for i in range(
 
     ]
 
-    if txn_type in debit_transactions:
+    if status == "SUCCESS":
 
-        if current_balance >= amount:
+        if txn_type in debit_transactions:
 
-            current_balance -= amount
+            if current_balance >= amount:
+
+                current_balance -= amount
+
+            else:
+
+                txn_type = "CASH_DEPOSIT"
+
+                current_balance += amount
 
         else:
 
-            txn_type = "CASH_DEPOSIT"
-
             current_balance += amount
-
-    else:
-
-        current_balance += amount
 
     balance_map[
         account_id
     ] = current_balance
+
+    customer_id = account_customer_map[
+        account_id
+    ]
+
+    customer_created_at = (
+        customer_created_map[
+            customer_id
+        ]
+    )
+
+    device_id = random.choice(
+        customer_devices[
+            customer_id
+        ]
+    )
 
     transactions.append(
 
@@ -286,7 +349,9 @@ for i in range(
             ),
 
             "txn_time":
-            generate_datetime(),
+            generate_datetime(
+                customer_created_at
+            ),
 
             "channel":
             random.choices(
@@ -301,14 +366,10 @@ for i in range(
             ],
 
             "device_id":
-            f"DEV{random.randint(1,50000):06d}",
+            device_id,
 
             "status":
-            random.choices(
-                STATUS,
-                weights=STATUS_WEIGHTS,
-                k=1
-            )[0],
+            status,
 
             "fraud_pattern":
             "NORMAL"
@@ -325,13 +386,18 @@ transactions_df = pd.DataFrame(
     transactions
 )
 
+transactions_df["country_id"] = (
+    transactions_df["country_id"]
+    .astype("Int64")
+)
+
 # -----------------------------------
 # Validation
 # -----------------------------------
 
 assert len(
     transactions_df
-) == 499000
+) == TOTAL_TRANSACTIONS
 
 assert transactions_df[
     "txn_id"

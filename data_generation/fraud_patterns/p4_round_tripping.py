@@ -9,7 +9,22 @@ from fraud_patterns.common import RANDOM_SEED
 random.seed(RANDOM_SEED)
 
 
-def inject_round_tripping(transactions_df, accounts_df):
+
+
+def inject_round_tripping(transactions_df, accounts_df, beneficiaries_df, fatf_df):
+
+    beneficiary_lookup = (
+        beneficiaries_df
+        .groupby("account_id")["beneficiary_id"]
+        .apply(list)
+        .to_dict()
+    )
+
+    account_balance_lookup = (
+        accounts_df
+        .set_index("account_id")["balance"]
+        .to_dict()
+    )
 
     active_accounts = accounts_df[
         accounts_df["status"] == "ACTIVE"
@@ -30,6 +45,12 @@ def inject_round_tripping(transactions_df, accounts_df):
     )
 
     transaction_counter = last_id + 1
+
+
+    high_risk_country_ids = fatf_df[
+        "country_id"
+    ].tolist()
+
 
     for source_account in selected_accounts:
 
@@ -67,12 +88,31 @@ def inject_round_tripping(transactions_df, accounts_df):
                 - random.randint(500, 3000) * i
             )
 
+            available_beneficiaries = beneficiary_lookup.get(
+                sender,
+                []
+            )
+
+            beneficiary_id = random.choice(
+                available_beneficiaries
+            )
+
+            # compute realistic balance for sender (outgoing transfer)
+            current_balance = account_balance_lookup.get(sender, 0)
+
+            balance_after_txn = max(
+                current_balance - amount,
+                0
+            )
+
+            account_balance_lookup[sender] = balance_after_txn
+
             txn = {
                 "txn_id": f"TXN{transaction_counter:09d}",
 
                 "account_id": sender,
 
-                "beneficiary_id": f"BEN{random.randint(1, 99999):08d}",
+                "beneficiary_id": beneficiary_id,
 
                 "txn_type": random.choice(
                     [
@@ -83,7 +123,7 @@ def inject_round_tripping(transactions_df, accounts_df):
 
                 "amount": amount,
 
-                "balance_after_txn": 0.0,
+                "balance_after_txn": balance_after_txn,
 
                 "txn_time": start_time + timedelta(
                     minutes=random.randint(15, 90) * (i + 1)
@@ -91,8 +131,9 @@ def inject_round_tripping(transactions_df, accounts_df):
 
                 "channel": "INTERNET_BANKING",
 
-                "country_id": 20,
-
+                "country_id": random.choice(
+                    high_risk_country_ids
+                ),
                 "device_id": str(uuid.uuid4())[:12],
 
                 "status": "SUCCESS",
@@ -121,13 +162,6 @@ def inject_round_tripping(transactions_df, accounts_df):
         ignore_index=True
     )
 
-    final_df = pd.concat(
-        [
-            transactions_df,
-            fraud_df
-        ],
-        ignore_index=True
-    )
 
     return final_df
 

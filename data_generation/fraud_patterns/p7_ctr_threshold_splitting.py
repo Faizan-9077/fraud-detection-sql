@@ -11,11 +11,25 @@ random.seed(RANDOM_SEED)
 
 def inject_ctr_threshold_splitting(
     transactions_df,
-    accounts_df
+    accounts_df,
+    beneficiaries_df
 ):
 
     transactions_df["txn_time"] = pd.to_datetime(
         transactions_df["txn_time"]
+    )
+
+    beneficiary_lookup = (
+        beneficiaries_df
+        .groupby("account_id")["beneficiary_id"]
+        .apply(list)
+        .to_dict()
+    )
+
+    account_balance_lookup = (
+        accounts_df
+        .set_index("account_id")["balance"]
+        .to_dict()
     )
 
     active_accounts = accounts_df[
@@ -56,6 +70,33 @@ def inject_ctr_threshold_splitting(
         for i in range(
             number_of_transactions
         ):
+            
+            available_beneficiaries = beneficiary_lookup.get(
+                account,
+                []
+            )
+
+            beneficiary_id = random.choice(
+                available_beneficiaries
+            )
+
+            current_balance = account_balance_lookup.get(
+                account,
+                0
+            )
+
+            txn_amount = random.randint(
+                950000,
+                999999
+            )
+
+            balance_after_txn = (
+                current_balance + txn_amount
+            )
+
+            account_balance_lookup[account] = (
+                balance_after_txn
+            )
 
             txn = {
 
@@ -66,19 +107,16 @@ def inject_ctr_threshold_splitting(
                 account,
 
                 "beneficiary_id":
-                f"BEN{random.randint(1,99999):08d}",
+                beneficiary_id,
 
                 "txn_type":
                 "CASH_DEPOSIT",
 
                 "amount":
-                random.randint(
-                    950000,
-                    999999
-                ),
+                txn_amount,
 
                 "balance_after_txn":
-                0.0,
+                balance_after_txn,
 
                 "txn_time":
                 start_time
@@ -101,7 +139,7 @@ def inject_ctr_threshold_splitting(
                 "SUCCESS",
 
                 "fraud_pattern":
-                "P7_CTR_THRESHOLD_SPLITTING"
+                "CTR_THRESHOLD_SPLITTING"
 
             }
 
