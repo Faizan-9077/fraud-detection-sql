@@ -100,7 +100,7 @@ SELECT
     t.txn_type,
     t.channel,
     -- Days inactive before this transaction
-    DATE_PART('day', t.txn_time::date - a.last_active_date) 
+    (t.txn_time::date - a.last_active_date) 
         AS days_since_last_active
 FROM accounts a
 JOIN customers c     ON a.customer_id = c.customer_id
@@ -408,7 +408,7 @@ SELECT
     k.status              AS kyc_status,
     k.review_date,
     -- Days since KYC review
-    DATE_PART('day', CURRENT_DATE - k.review_date) 
+    (CURRENT_DATE - k.review_date) 
         AS kyc_overdue_days,
     a.account_id,
     a.account_type,
@@ -628,7 +628,7 @@ SELECT
     c.customer_id,
     c.first_name || ' ' || c.last_name AS customer_name,
     c.created_at          AS customer_onboarded,
-    DATE_PART('day', CURRENT_TIMESTAMP - c.created_at) 
+    (CURRENT_TIMESTAMP - c.created_at) 
         AS customer_age_days,
     c.risk_rating,
     c.pan_number,
@@ -712,15 +712,15 @@ SELECT
     al.status,
     al.created_at         AS alert_raised_at,
     -- Age of alert
-    DATE_PART('day', CURRENT_TIMESTAMP - al.created_at) 
+    (CURRENT_TIMESTAMP - al.created_at) 
         AS alert_age_days,
     -- SLA breach classification
     CASE 
-        WHEN DATE_PART('day', CURRENT_TIMESTAMP - al.created_at) > 45 
+        WHEN (CURRENT_TIMESTAMP - al.created_at) > INTERVAL '45 days' 
              AND al.severity = 'HIGH'   THEN 'CRITICAL_BREACH'
-        WHEN DATE_PART('day', CURRENT_TIMESTAMP - al.created_at) > 30 
+        WHEN (CURRENT_TIMESTAMP - al.created_at) > INTERVAL '30 days' 
              AND al.severity = 'HIGH'   THEN 'HIGH_BREACH'
-        WHEN DATE_PART('day', CURRENT_TIMESTAMP - al.created_at) > 60 
+        WHEN (CURRENT_TIMESTAMP - al.created_at) > INTERVAL '60 days' 
              THEN 'STANDARD_BREACH'
         ELSE 'WITHIN_SLA'
     END AS sla_status,
