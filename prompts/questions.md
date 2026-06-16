@@ -26,8 +26,7 @@ WHERE email = 'johndoe@example.com';
 SELECT account_id, customer_id, branch_id, balance
 FROM accounts
 WHERE status = 'ACTIVE'
-  AND balance > 100000
-  AND currency = 'INR';
+  AND balance > 100000;
 ```
 
 ---
@@ -47,7 +46,7 @@ ORDER BY total_customers DESC;
 
 ## 4. Aggregation (SUM with JOIN)
 
-**Question:** What is the total combined account balance for the customer with CIF `CUST-8829`?
+**Question:** What is the total combined account balance for the customer with cif_no `CIF`?
 
 ```sql
 SELECT c.customer_id,
@@ -57,7 +56,7 @@ SELECT c.customer_id,
 FROM customers c
 JOIN accounts a
   ON c.customer_id = a.customer_id
-WHERE c.customer_id = 'CUST-8829'
+WHERE c.customer_id = 'CIF'
 GROUP BY c.customer_id, c.first_name, c.last_name;
 ```
 
@@ -65,7 +64,7 @@ GROUP BY c.customer_id, c.first_name, c.last_name;
 
 ## 5. Multi-Table Joins (3 Tables)
 
-**Question:** Show me all recent transactions made by customers who have a `SEVERE` risk rating.
+**Question:** Show me all recent transactions made by customers who have a `HIGH` risk rating.
 
 ```sql
 SELECT t.txn_id,
@@ -79,7 +78,7 @@ JOIN accounts a
   ON t.account_id = a.account_id
 JOIN customers c
   ON a.customer_id = c.customer_id
-WHERE c.risk_rating = 'SEVERE'
+WHERE c.risk_rating = 'HIGH'
 ORDER BY t.txn_time DESC
 LIMIT 100;
 ```
@@ -88,7 +87,7 @@ LIMIT 100;
 
 ## 6. Left Join & Null Checking (Data Anomalies)
 
-**Question:** Find all customers who have registered an account but do not have any KYC records on file.
+**Question:** Find all customers who have registered an account but KYC has been rejected.
 
 ```sql
 SELECT c.customer_id,
@@ -98,7 +97,7 @@ SELECT c.customer_id,
 FROM customers c
 LEFT JOIN kyc_records k
   ON c.customer_id = k.customer_id
-WHERE k.kyc_id IS NULL;
+WHERE k.status = 'REJECTED';
 ```
 
 ---
@@ -180,7 +179,7 @@ WHERE a.balance = (
 
 ## 11. String Manipulation & Pattern Matching (LIKE)
 
-**Question:** Find all beneficiaries whose name contains the word `Crypto` or `Exchange`.
+**Question:** Find all beneficiaries whose name contains the word `alex` or `raman`.
 
 ```sql
 SELECT beneficiary_id,
@@ -188,15 +187,15 @@ SELECT beneficiary_id,
        beneficiary_name,
        beneficiary_account_number
 FROM beneficiaries
-WHERE beneficiary_name ILIKE '%crypto%'
-   OR beneficiary_name ILIKE '%exchange%';
+WHERE beneficiary_name ILIKE '%alex%'
+   OR beneficiary_name ILIKE '%raman%';
 ```
 
 ---
 
 ## 12. Cross-Border AML Rule (High-Risk Beneficiary)
 
-**Question:** Show all outward (`DEBIT`) transactions sent to beneficiaries located in countries marked as FATF list type `BLACKLIST`.
+**Question:** Show all outward (`DEBIT`) transactions sent to beneficiaries located in countries marked as FATF list type `BLACK`.
 
 ```sql
 SELECT t.txn_id,
@@ -209,8 +208,8 @@ JOIN beneficiaries b
   ON t.beneficiary_id = b.beneficiary_id
 JOIN fatf_high_risk_countries f
   ON b.country_id = f.country_id
-WHERE t.txn_type = 'DEBIT'
-  AND f.fatf_list_type = 'BLACKLIST';
+WHERE t.txn_type = 'CASH_WITHDRAWAL'
+  AND f.fatf_list_type = 'BLACK';
 ```
 
 ---
@@ -225,7 +224,7 @@ SELECT account_id,
        COUNT(txn_id) AS total_txns,
        SUM(amount) AS total_volume
 FROM transactions
-WHERE txn_type = 'DEBIT'
+WHERE txn_type = 'CASH_WITHDRAWAL'
 GROUP BY account_id, DATE(txn_time)
 HAVING COUNT(txn_id) > 10
 ORDER BY total_txns DESC;
@@ -242,7 +241,7 @@ SELECT account_id,
        COUNT(txn_id) AS smurf_attempts,
        SUM(amount) AS total_smurfed
 FROM transactions
-WHERE txn_type = 'CREDIT'
+WHERE txn_type = 'CASH_DEPOSIT'
   AND amount BETWEEN 9000 AND 9999
   AND txn_time >= NOW() - INTERVAL '5 days'
 GROUP BY account_id
@@ -301,8 +300,8 @@ WHERE rn = 1;
 ```sql
 WITH DailyTotals AS (
     SELECT account_id,
-           SUM(CASE WHEN txn_type = 'CREDIT' THEN amount ELSE 0 END) AS total_in,
-           SUM(CASE WHEN txn_type = 'DEBIT' THEN amount ELSE 0 END) AS total_out
+           SUM(CASE WHEN txn_type = 'CASH_DEPOSIT' THEN amount ELSE 0 END) AS total_in,
+           SUM(CASE WHEN txn_type = 'CASH_WITHDRAWAL' THEN amount ELSE 0 END) AS total_out
     FROM transactions
     WHERE DATE(txn_time) = CURRENT_DATE
     GROUP BY account_id

@@ -36,11 +36,11 @@ def main():
 
         "data_generation/generate_accounts.py",
 
+        "data_generation/generate_fatf_high_risk_countries.py",
+
         "data_generation/generate_beneficiaries.py",
 
         "data_generation/generate_kyc_records.py",
-
-        "data_generation/generate_fatf_high_risk_countries.py",
 
         "data_generation/generate_device_logins.py",
 
