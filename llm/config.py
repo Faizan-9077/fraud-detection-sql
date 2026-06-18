@@ -6,7 +6,7 @@ from dotenv import load_dotenv
 load_dotenv()
 
 # Provider Selection
-LLM_PROVIDER = os.getenv(
+LLM_PROVIDER = os.getenv(   
     "LLM_PROVIDER",
     "ollama"
 )

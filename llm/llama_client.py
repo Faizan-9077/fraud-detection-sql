@@ -1,6 +1,6 @@
 import requests
 
-from .config import OLLAMA_BASE_URL, MODEL_NAME
+from .config import OLLAMA_BASE_URL, OLLAMA_MODEL
 
 
 class LlamaClient:
@@ -9,7 +9,7 @@ class LlamaClient:
 
     def generate(self, prompt: str) -> str:
         payload = {
-            "model": MODEL_NAME,
+            "model": OLLAMA_MODEL,
             "prompt": prompt,
             "stream": False
         }
