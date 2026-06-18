@@ -9,7 +9,7 @@ def main():
     try:
         client = LlamaClient()
 
-        prompt = "Reply with exactly: HEALTH CHECK PASSED"
+        prompt = "Hello How are you?"
 
         result = client.generate(prompt)
 
