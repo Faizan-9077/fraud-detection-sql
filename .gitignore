@@ -23,5 +23,9 @@ Thumbs.db
 # Sample data
 generated_data/
 
+# Test Artifacts
+evaluation/*.csv
+evaluation/*.txt
+
 
 tests/

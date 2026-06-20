@@ -22,4 +22,10 @@ class LlamaClient:
 
         response.raise_for_status()
 
-        return response.json()["response"]
+        data = response.json()
+
+        # print("\n===== OLLAMA RESPONSE =====")
+        # print(data)
+        # print("===========================\n")
+
+        return data["response"]
