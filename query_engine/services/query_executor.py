@@ -4,6 +4,7 @@ import psycopg2
 from psycopg2.extras import RealDictCursor
 
 from database.db_config import DB_CONFIG
+from api.exceptions import DatabaseExecutionError
 
 
 class QueryExecutor:
@@ -29,8 +30,8 @@ class QueryExecutor:
 
         except psycopg2.Error as e:
 
-            raise RuntimeError(
-                f"Database execution failed."
+            raise DatabaseExecutionError(
+                "Database execution failed."
             ) from e
 
         finally:
