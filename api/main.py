@@ -12,10 +12,22 @@ from api.exceptions import (
 from query_engine.services.sql_validator import SQLValidationError
 
 
+from fastapi.middleware.cors import CORSMiddleware
+
 app = FastAPI(
     title="AML Fraud Detection API",
     description="Natural Language to SQL API for AML Fraud Detection",
     version="1.0.0",
+)
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=[
+        "http://localhost:5173",
+    ],
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
 )
 
 

@@ -1,31 +1,60 @@
-# Virtual Environment
+# =========================
+# Python
+# =========================
 
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyd
+
+# Virtual Environments
 venv/
-
-# Python Cache
-
-**pycache**/
-*.pyc
+.venv/
+env/
 
 # Environment Variables
-
 .env
 
-# VS Code
+# =========================
+# Node / React
+# =========================
+
+frontend/node_modules/
+frontend/dist/
+frontend/build/
+
+# =========================
+# IDE
+# =========================
 
 .vscode/
+.idea/
 
-# OS Files
+# =========================
+# Operating System
+# =========================
 
 .DS_Store
 Thumbs.db
 
-# Sample data
+# =========================
+# Generated Data
+# =========================
+
 generated_data/
 
-# Test Artifacts
+# =========================
+# Evaluation Outputs
+# =========================
+
 evaluation/*.csv
 evaluation/*.txt
 
+# =========================
+# Testing
+# =========================
 
 tests/
+.pytest_cache/
+.coverage
+htmlcov/
