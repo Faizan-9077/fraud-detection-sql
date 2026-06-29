@@ -8,6 +8,7 @@ import {
 } from "@mui/material";
 
 import ContentCopyIcon from "@mui/icons-material/ContentCopy";
+import BookmarkIcon from "@mui/icons-material/Bookmark";
 import { format } from "sql-formatter";
 
 import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
@@ -16,7 +17,8 @@ import BookmarkBorderIcon from "@mui/icons-material/BookmarkBorder";
 export default function SQLViewer({
     sql,
     lastQuestion,
-    addBookmark,
+    toggleBookmark,
+    isBookmarked,
     showSnackbar,
 }) {
   const copySQL = () => {
@@ -46,18 +48,12 @@ export default function SQLViewer({
 
         <Box sx={{ display: "flex", gap: 1 }}>
 
-        <Tooltip title="Bookmark Investigation">
+        <Tooltip title={isBookmarked ? "Remove Bookmark" : "Bookmark Investigation"}>
           <IconButton
-            onClick={() => {
-                addBookmark(lastQuestion, sql);
-
-                showSnackbar(
-                    "Investigation bookmarked!",
-                    "success"
-                );
-            }}
-        >
-            <BookmarkBorderIcon />
+            onClick={() => toggleBookmark(lastQuestion, sql)}
+            sx={{ color: isBookmarked ? "primary.main" : "inherit" }}
+          >
+            {isBookmarked ? <BookmarkIcon /> : <BookmarkBorderIcon />}
           </IconButton>
         </Tooltip>
 

@@ -13,6 +13,8 @@ ListItemText,
 export default function BookmarkPanel({
 
 bookmarks,
+runQuery,
+setCurrentQuestion,
 
 }) {
 
@@ -50,7 +52,13 @@ secondary="Save investigations later"
 
 bookmarks.map((item,index)=>(
 
-<ListItemButton key={index}>
+<ListItemButton
+    key={index}
+    onClick={() => {
+        setCurrentQuestion(item.question);
+        runQuery(item.question);
+    }}
+>
 
 <ListItemText
 

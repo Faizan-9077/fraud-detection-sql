@@ -7,6 +7,8 @@ import {
 
 export default function HistoryPanel({
     history,
+    runQuery,
+    setCurrentQuestion,
 }) {
 
     return (
@@ -32,7 +34,13 @@ export default function HistoryPanel({
 
                     history.map((item, index) => (
 
-                        <ListItemButton key={index}>
+                        <ListItemButton
+                            key={index}
+                            onClick={() => {
+                                setCurrentQuestion(item.question);
+                                runQuery(item.question);
+                            }}
+                        >
                           <ListItemText
                               primary={item.question}
                               secondary={item.timestamp}

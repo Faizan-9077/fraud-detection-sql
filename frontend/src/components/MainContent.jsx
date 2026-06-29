@@ -16,20 +16,15 @@ export default function MainContent(props) {
       }}
     >
       <QueryInput
-        setSql={props.setSql}
-        setResults={props.setResults}
-        setRowCount={props.setRowCount}
-        setLastQuestion={props.setLastQuestion}
-        setSuccess={props.setSuccess}
-        addToHistory={props.addToHistory}
-        showSnackbar={props.showSnackbar}
-
-    />
+          question={props.currentQuestion}
+          setQuestion={props.setCurrentQuestion}
+          runQuery={props.runQuery}
+      />
 
       <SummaryCards
         rowCount={props.rowCount}
         success={props.success}
-        lastQuestion={props.lastQuestion}
+        question={props.lastQuestion}
       />
 
       <ExportButtons
@@ -43,7 +38,8 @@ export default function MainContent(props) {
       />
 
       <SQLViewer 
-        addBookmark={props.addBookmark}
+        toggleBookmark={props.toggleBookmark}
+        isBookmarked={props.isBookmarked}
         lastQuestion={props.lastQuestion}
         sql={props.sql} 
         showSnackbar={props.showSnackbar}

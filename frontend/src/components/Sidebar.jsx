@@ -10,6 +10,8 @@ import BookmarkPanel from "./BookmarkPanel";
 export default function Sidebar({
     history,
     bookmarks,
+    runQuery,
+    setCurrentQuestion,
 }) {
   return (
     <Box
@@ -32,13 +34,20 @@ export default function Sidebar({
 
       <Divider sx={{ mb: 2 }} />
 
-      <HistoryPanel history={history} />
+      <HistoryPanel
+        history={history}
+        runQuery={runQuery}
+        setCurrentQuestion={setCurrentQuestion}
+    />
+
 
       <Divider sx={{ my: 3 }} />
 
       <BookmarkPanel
-          bookmarks={bookmarks}
-      />
+        bookmarks={bookmarks}
+        runQuery={runQuery}
+        setCurrentQuestion={setCurrentQuestion}
+    />
     </Box>
   );
 }

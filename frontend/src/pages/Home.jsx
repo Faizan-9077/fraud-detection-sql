@@ -9,6 +9,7 @@ import Snackbar from "@mui/material/Snackbar";
 import Alert from "@mui/material/Alert";
 import jsPDF from "jspdf";
 import autoTable from "jspdf-autotable";
+import api from "../services/api";
 
 export default function Home() {
 
@@ -16,6 +17,7 @@ export default function Home() {
   const [results, setResults] = useState([]);
   const [rowCount, setRowCount] = useState(0);
   const [lastQuestion, setLastQuestion] = useState("");
+  const [currentQuestion, setCurrentQuestion] = useState("");
   const [success, setSuccess] = useState(false);
 
   const [history, setHistory] = useState(() => {
@@ -83,6 +85,14 @@ export default function Home() {
     );
   };
 
+  const removeBookmark = (question) => {
+    const updatedBookmarks = bookmarks.filter(
+      (item) => item.question !== question
+    );
+
+    setBookmarks(updatedBookmarks);
+    localStorage.setItem("bookmarks", JSON.stringify(updatedBookmarks));
+  };
 
     const showSnackbar = (
       message,
@@ -97,6 +107,22 @@ export default function Home() {
 
     };
 
+  const toggleBookmark = (question, sql) => {
+    if (!question.trim()) return;
+
+    const isBookmarked = bookmarks.some(
+      (item) => item.question === question
+    );
+
+    if (isBookmarked) {
+      removeBookmark(question);
+      showSnackbar("Investigation removed from bookmarks.", "info");
+    } else {
+      addBookmark(question, sql);
+      showSnackbar("Investigation bookmarked!", "success");
+    }
+  };
+
     const handleCloseSnackbar = () => {
 
         setSnackbar(prev => ({
@@ -105,6 +131,31 @@ export default function Home() {
         }));
 
     };
+
+    const runQuery = async (question) => {
+      if (!question.trim()) return;
+
+      setCurrentQuestion(question);
+
+      try {
+          const response = await api.post("/query", { question });
+
+          setSql(response.data.sql);
+          setResults(response.data.results);
+          setRowCount(response.data.row_count);
+          setLastQuestion(question);
+          setSuccess(true);
+
+          addToHistory(question);
+      } catch (error) {
+          setSuccess(false);
+
+          showSnackbar(
+              error.response?.data?.error || "Query failed.",
+              "error"
+          );
+      }
+  };
 
 
     const exportCSV = () => {
@@ -153,59 +204,93 @@ const exportPDF = () => {
 
     if (!results.length) return;
 
-    const doc = new jsPDF();
+    const doc = new jsPDF({
+        orientation: "landscape",
+    });
 
+    doc.setFont("helvetica", "bold");
     doc.setFontSize(18);
-    doc.text("AML Investigation Report", 14, 20);
+    doc.text("AML Investigation Report", 14, 24);
 
-    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(10);
 
     doc.text(
         `Generated: ${new Date().toLocaleString()}`,
         14,
-        30
+        34,
+        { maxWidth: 260 }
     );
 
     doc.text(
         `Question: ${lastQuestion}`,
         14,
-        40
+        44,
+        { maxWidth: 260 }
     );
 
     doc.text(
         `Rows Returned: ${rowCount}`,
         14,
-        50
+        56,
+        { maxWidth: 260 }
     );
 
+    doc.setFont("helvetica", "bold");
     doc.text(
         "Generated SQL:",
         14,
-        62
+        68,
+        { maxWidth: 260 }
     );
 
-    const sqlLines = doc.splitTextToSize(sql, 180);
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(9);
+    doc.text(
+        sql,
+        14,
+        76,
+        { maxWidth: 260 }
+    );
 
-    doc.text(sqlLines, 14, 70);
+    const formatValue = (value) => {
+      if (value === null || value === undefined) return "";
+      if (typeof value === "number") {
+        return Number.isInteger(value)
+          ? value.toLocaleString()
+          : value.toLocaleString(undefined, {
+              minimumFractionDigits: 0,
+              maximumFractionDigits: 2,
+            });
+      }
+      return String(value);
+    };
 
     const headers = [Object.keys(results[0])];
 
-    const body = results.map(row =>
-        Object.values(row)
+    const body = results.map((row) =>
+      Object.values(row).map(formatValue)
     );
 
     autoTable(doc, {
-
-        head: headers,
-
-        body,
-
-        startY: 90,
-
-        styles: {
-            fontSize: 8,
-        },
-
+      head: headers,
+      body,
+      startY: 92,
+      margin: { left: 14, right: 14 },
+      tableWidth: "auto",
+      styles: {
+        fontSize: 8,
+        cellPadding: 3,
+        overflow: "linebreak",
+        cellWidth: "wrap",
+        halign: "left",
+        valign: "middle",
+      },
+      headStyles: {
+        fillColor: [41, 128, 185],
+        textColor: 255,
+        fontStyle: "bold",
+      },
     });
 
     const finalY =
@@ -249,24 +334,26 @@ const exportPDF = () => {
         <Sidebar
             history={history}
             bookmarks={bookmarks}
+            runQuery={runQuery}
+            setCurrentQuestion={setCurrentQuestion}
         />
 
         <MainContent
-          sql={sql}
-          setSql={setSql}
-          results={results}
-          setResults={setResults}
-          rowCount={rowCount}
-          setRowCount={setRowCount}
-          lastQuestion={lastQuestion}
-          setLastQuestion={setLastQuestion}
-          success={success}
-          setSuccess={setSuccess}
-          addToHistory={addToHistory}
-          addBookmark={addBookmark}
-          showSnackbar={showSnackbar}
-          exportCSV={exportCSV}
-          exportPDF={exportPDF}
+            sql={sql}
+            results={results}
+            rowCount={rowCount}
+            lastQuestion={lastQuestion}
+            success={success}
+            currentQuestion={currentQuestion}
+            setCurrentQuestion={setCurrentQuestion}
+            runQuery={runQuery}
+            toggleBookmark={toggleBookmark}
+            isBookmarked={bookmarks.some(
+              (item) => item.question === lastQuestion
+            )}
+            showSnackbar={showSnackbar}
+            exportCSV={exportCSV}
+            exportPDF={exportPDF}
         />
       </Box>
 
